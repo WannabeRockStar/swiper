@@ -9,112 +9,105 @@
     console.log(initialWidth)
     
     let counter = 1
-    let touchMove = 0
+    let swipeMove = 0
     let isClicked = false
     let isDragged = false
+    let isTouched = false
     let startPoint = 0
+    let touchX = 0
     let direction = ''
     slider.style.width = `${initialWidth}px`
     
     sliderContainer.style.transform = `translateX(-${initialWidth * counter}px)`
     
-    arrowRight.addEventListener('click', () => {
-        
+    arrowRight.addEventListener('click', (e) => { 
+        clickHandler(e)
+    })
+    
+    arrowLeft.addEventListener('click', (e) => {
+        clickHandler(e)
+    })
+
+    const clickHandler = (e) => {
         if(isClicked) return
-        counter++
+        
+        if(e.target.id === 'arrow-left') {
+            counter--
+        } else if(e.target.id === 'arrow-right') {
+            counter++
+        }
+
+        // console.log('counter: ', counter, this, e.target.id)
+        
         isClicked = true
         
         sliderContainer.style.transform = `translateX(-${initialWidth * counter}px)`
-        console.log('click', counter)
+        // console.log('click', counter)
         
-            sliderContainer.style.transitionDuration = `300ms`
-            setTimeout(() => {
-                sliderContainer.style.transitionDuration = `0ms`
-                if(counter === images.length - 1) {
-                    counter = 1
-                    sliderContainer.style.transform = `translateX(-${initialWidth}px)`
-                    console.log(isClicked)
-                }
-                isClicked = false
-            }, 300)
-            
-    
-            console.log(counter, isClicked, images.length - 1)
-        
-    })
-    
-    arrowLeft.addEventListener('click', () => {
-        counter--
-        
-        sliderContainer.style.transform = `translateX(-${initialWidth * counter}px)`
         sliderContainer.style.transitionDuration = `300ms`
         setTimeout(() => {
             sliderContainer.style.transitionDuration = `0ms`
+            if(counter === images.length - 1) {
+                counter = 1
+                sliderContainer.style.transform = `translateX(-${initialWidth}px)`
+            }
+
             if(counter === 0) {
                 counter = images.length - 2
                 sliderContainer.style.transform = `translateX(-${initialWidth * counter}px)`
             }
+
+            isClicked = false
         }, 300)
-        
-        
-        console.log('click', )
-    })
+    }
 
     const startMouseMove = (e) => {
         e.preventDefault()
-        console.log('mousedown', e)
+        // console.log('mousedown', e)
         isDragged = true
         startPoint = e.layerX
     }
 
     sliderContainer.addEventListener('mousedown', (e) => {
         startMouseMove(e)
-    } )
+    })
 
     // sliderContainer.removeEventListener('mousedown', startMouseMover)
 
     sliderContainer.addEventListener('mousemove', (e) => {
-        let startX = 0
         
         if(e.movementX > 0) {
             direction = 'right'
         } else if(e.movementX < 0) {
             direction = 'left'
         }
+
         if(isDragged) {
+            swipeMove = e.layerX - startPoint
             if(direction === 'right') {
-                touchMove = e.layerX - startPoint
-                console.log('mousemove',  touchMove)
-                console.log(e, sliderContainer.style.transform)
-                sliderContainer.style.transform = `translateX(-${(initialWidth * counter) - touchMove }px)`
+                sliderContainer.style.transform = `translateX(-${(initialWidth * counter) - swipeMove }px)`
             } else if(direction === 'left') {
-                touchMove = e.layerX - startPoint
-                console.log('mousemove',  touchMove)
-                console.log(e, sliderContainer.style.transform)
-                sliderContainer.style.transform = `translateX(-${(initialWidth * counter) + (-touchMove) }px)`
+                sliderContainer.style.transform = `translateX(-${(initialWidth * counter) + (-swipeMove) }px)`
             }
-            
         }
-        
     })
 
-
     sliderContainer.addEventListener('mouseup', () => {
-        console.log('mouseup')
+        // console.log('mouseup')
         isDragged = false
-        if(touchMove > (initialWidth / 2) && direction === 'right') {
+        if(swipeMove > (initialWidth / 2) && direction === 'right') {
             console.log('ARIS')
             counter--
         }
 
-        if(touchMove < (-initialWidth / 2) && direction === 'left') {
+        if(swipeMove < (-initialWidth / 2) && direction === 'left') {
             console.log('ARIS')
             counter++
         }
         
         sliderContainer.style.transitionDuration = `150ms`
         sliderContainer.style.transform = `translateX(-${initialWidth * counter }px)`
-        console.log(touchMove, initialWidth / 2, 'Touchmove')
+        // console.log(swipeMove, initialWidth / 2, 'swipeMove')
         setTimeout(() => {
             sliderContainer.style.transitionDuration = `0ms`
             if(counter === 0) {
@@ -132,10 +125,47 @@
             }
             isClicked = false
         }, 300)
-
-       
         
-        touchMove = 0
+        swipeMove = 0
+    })
+
+    document.addEventListener('touchstart', (e) => {
+        touchX = e.changedTouches[0].pageX
+        
+    })
+    
+    document.addEventListener('touchmove', (e) => {
+        if(isTouched) {
+            return
+        }
+        isTouched = true
+
+        if(e.type === 'touchmove' && e.changedTouches[0].pageX < touchX) {
+            counter++
+        } else if(e.type === 'touchmove' && e.changedTouches[0].pageX > touchX) {
+            counter--
+        }
+        sliderContainer.style.transitionDuration = `300ms`
+        sliderContainer.style.transform = `translateX(-${initialWidth * counter}px)`
+
+        setTimeout(() => {
+            sliderContainer.style.transitionDuration = `0ms`
+            if(counter === images.length - 1) {
+                counter = 1
+                sliderContainer.style.transform = `translateX(-${initialWidth}px)`
+            }
+
+            if(counter === 0) {
+                counter = images.length - 2
+                sliderContainer.style.transform = `translateX(-${initialWidth * counter}px)`
+            }
+
+            
+        }, 300)
+    })
+
+    document.addEventListener('touchend', (e) => {
+        isTouched = false
     })
 
 })()

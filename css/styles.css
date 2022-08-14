@@ -39,3 +39,8 @@
 .arrow-right {
     right: 20px;
 }
+svg {
+    width: 50px;
+    fill: #fff;
+    pointer-events: none;
+}
